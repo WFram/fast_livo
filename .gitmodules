@@ -4,6 +4,8 @@
 [submodule "src/rpg_vikit"]
 	path = src/rpg_vikit
 	url = https://github.com/WFram/rpg_vikit
+	branch = feature/add_docker
 [submodule "src/FAST-LIVO"]
 	path = src/FAST-LIVO
 	url = https://github.com/WFram/FAST-LIVO
+	branch = feature/add_docker
