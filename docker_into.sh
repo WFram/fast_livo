@@ -1,0 +1,1 @@
+docker exec -it fast_livo bash

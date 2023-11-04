@@ -1,0 +1,126 @@
+FROM ubuntu:20.04 as base
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV DBUS_SESSION_BUS_ADDRESS=unix:path=/var/run/dbus/system_bus_socket
+
+RUN mkdir -p /app/fast_livo
+
+WORKDIR /app/fast_livo
+
+RUN apt-get update && apt-get install -y apt-transport-https
+RUN apt-get update && apt-get install build-essential software-properties-common -y \
+    sudo \
+    cmake \
+    libboost-all-dev \
+    graphviz \
+    libgl1-mesa-dev \
+    libglew-dev \
+    libhdf5-dev \
+    libfreetype6-dev \
+    libavcodec-dev \
+    libavformat-dev \
+    libswscale-dev \
+    libavutil-dev \
+    sed \
+    gcc-9 \
+    g++-9 \
+    gdb \
+    zlib1g \
+    ninja-build \
+    wget \
+    ffmpeg \
+    libgflags-dev \
+    python3 \
+    python3-pip \
+    git \
+    unzip \
+    python3-dev \
+    libopenblas-dev \
+    bzip2 \
+    ca-certificates \
+    curl \
+    libgoogle-glog-dev \
+    libgflags-dev \
+    libatlas-base-dev \
+    libsuitesparse-dev \
+    libfmt-dev \
+    libflann-dev
+
+RUN cd /app/fast_livo && \
+    git clone -b 3.3.7 https://gitlab.com/libeigen/eigen.git && \
+    cd eigen && \
+    mkdir build && \
+    cd build && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release && \
+    make install -j4 && \
+    cd ../.. && \
+    rm -rf eigen
+
+RUN cd /app/fast_livo && \
+    git clone https://github.com/strasdat/Sophus.git && \
+    cd Sophus && \
+    git checkout a621ff2e56c56c839a6c40418d42c3c254424b5c && \
+    sed -i 's/unit_complex_.real() = 1.;/unit_complex_ = std::complex<double>(1,0);/' sophus/so2.cpp && \
+    sed -i 's/unit_complex_.imag() = 0.;//g' sophus/so2.cpp && \
+    mkdir build && \
+    cd build && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-Wno-error=int-in-bool-context" && \
+    make install -j4 && \
+    cd ../.. && \
+    rm -rf Sophus
+
+RUN cd /app/fast_livo && \
+    git clone -b pcl-1.10.0 https://github.com/PointCloudLibrary/pcl && \
+    cd pcl && \
+    mkdir build && \
+    cd build && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release && \
+    echo "$(cat kdtree/CMakeFiles/pcl_kdtree.dir/link.txt) -llz4" > kdtree/CMakeFiles/pcl_kdtree.dir/link.txt && \
+    make install -j4 && \
+    cd ../.. && \
+    rm -rf pcl
+
+RUN cd /app/fast_livo && \
+    git clone -b 4.2.0 https://github.com/opencv/opencv.git && \
+    cd opencv && \
+    mkdir build && \
+    cd build && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release \
+             -DINSTALL_C_EXAMPLES=OFF \
+             -DINSTALL_PYTHON_EXAMPLES=OFF && \
+    make install -j4 && \
+    cd ../.. && \
+    rm -rf opencv
+
+RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list' && \
+    curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add - && \
+    apt update && \
+    apt install ros-noetic-desktop -y
+
+RUN apt-get update && apt-get install python3-rosdep -y \
+    python3-rosinstall \
+    python3-rosinstall-generator \
+    python3-wstool \
+    python3-rosdep \
+    python3-catkin-tools && \ 
+    rosdep init && \
+    rosdep update
+
+RUN apt-get update && apt-get install -y \
+    ros-noetic-roscpp \
+    ros-noetic-rospy \
+    ros-noetic-std-msgs \
+    ros-noetic-sensor-msgs \
+    ros-noetic-geometry-msgs \
+    ros-noetic-nav-msgs \
+    ros-noetic-tf \
+    ros-noetic-cv-bridge \
+    ros-noetic-image-transport \
+    ros-noetic-rosbag \
+    ros-noetic-pcl-conversions \
+    ros-noetic-pcl-ros \
+    ros-noetic-message-generation \
+    ros-noetic-eigen-conversions \
+    ros-noetic-cv-bridge \
+    ros-noetic-image-transport \
+    ros-noetic-image-transport-plugins
