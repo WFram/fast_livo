@@ -9,7 +9,7 @@ Host:
 git submodule update --init
 bash docker_build.sh
 xhost local:docker
-bash docker_run.sh
+bash docker_run.sh /path/to/catkin/workspace
 ```
 
 Inside a container:
