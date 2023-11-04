@@ -14,7 +14,7 @@ bash docker_run.sh /path/to/catkin/workspace
 
 Inside a container:
 ```
-bash configure_ws.sh
+bash $(find . -name "configure_ws.sh")
 catkin build
 source /opt/ros/noetic/setup.bash
 source devel/setup.bash
